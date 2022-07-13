@@ -155,11 +155,11 @@ fn get_available_fonts() -> Result<Vec<String>, String> {
 fn change_transparent_effect(effect: String, window: tauri::Window) {
     clear_blur(&window).unwrap();
     clear_acrylic(&window).unwrap();
-    clear_mica(&window).unwrap();
+    // clear_mica(&window).unwrap();
     match effect.as_str() {
         "blur" => apply_blur(&window, Some((18, 18, 18, 125))).unwrap(),
         "acrylic" => apply_acrylic(&window, Some((18, 18, 18, 125))).unwrap(),
-        "mica" => apply_mica(&window).unwrap(),
+        // "mica" => apply_mica(&window).unwrap(),
         _ => (),
     }
 }
