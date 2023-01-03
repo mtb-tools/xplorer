@@ -26,7 +26,7 @@ use tauri::Manager;
 use window_shadows::set_shadow;
 #[cfg(not(target_os = "linux"))]
 use window_vibrancy::{
-    apply_acrylic, apply_blur, apply_mica, clear_acrylic, clear_blur, clear_mica,
+    apply_acrylic, apply_blur, clear_acrylic, clear_blur
 };
 
 lazy_static! {
@@ -153,13 +153,23 @@ fn get_available_fonts() -> Result<Vec<String>, String> {
 #[tauri::command]
 #[inline]
 fn change_transparent_effect(effect: String, window: tauri::Window) {
+    use utils::is_win_11;
+
     clear_blur(&window).unwrap();
     clear_acrylic(&window).unwrap();
-    // clear_mica(&window).unwrap();
+    if is_win_11(){
+        use window_vibrancy::clear_mica;
+        clear_mica(&window).unwrap();
+    }
     match effect.as_str() {
         "blur" => apply_blur(&window, Some((18, 18, 18, 125))).unwrap(),
         "acrylic" => apply_acrylic(&window, Some((18, 18, 18, 125))).unwrap(),
-        // "mica" => apply_mica(&window).unwrap(),
+        "mica" => {
+            use window_vibrancy::apply_mica;
+            if is_win_11(){
+                apply_mica(&window).unwrap()
+            }
+        },
         _ => (),
     }
 }
@@ -170,7 +180,7 @@ fn change_transparent_effect(effect: String, window: tauri::Window) {
 fn change_transparent_effect(effect: String, window: tauri::Window) {
     if effect.as_str() == "vibrancy" {
         use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
-        apply_vibrancy(&window, NSVisualEffectMaterial::AppearanceBased).unwrap()
+        apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None).unwrap()
     }
 }
 
@@ -243,16 +253,18 @@ async fn main() {
         .setup(|app| {
             let window = app.get_window("main").unwrap();
             let appearance = storage::read_data("appearance").unwrap();
-            let transparent_effect = match appearance.status {
-                true => appearance.data["transparentEffect"]
-                    .as_str()
-                    .unwrap_or("none")
-                    .to_string(),
-                false => "none".to_string(),
+            let transparent_effect = if appearance.status {
+                appearance.data["transparentEffect"]
+                .as_str()
+                .unwrap_or("none")
+                .to_string()
+            } else {
+                "none".to_string()
             };
-            let shadow_effect_enabled = match appearance.status {
-                true => appearance.data["shadowEffect"].as_bool().unwrap_or(true),
-                false => true,
+            let shadow_effect_enabled = if appearance.status {
+                appearance.data["shadowEffect"].as_bool().unwrap_or(true)
+            } else {
+                true
             };
             enable_shadow_effect(shadow_effect_enabled, window.clone());
             change_transparent_effect(transparent_effect, window);

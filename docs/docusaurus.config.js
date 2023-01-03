@@ -16,13 +16,17 @@ module.exports = {
 	trailingSlash: true,
 	i18n: {
 		defaultLocale: 'en',
-		locales: ['en', 'es', 'fr'],
+		locales: ['en', 'es', 'fr', 'ru', 'it'],
 	},
 	customFields: {
 		supabaseKey: process.env.SUPABASE_KEY,
 	},
 	themeConfig: {
-		hideableSidebar: true,
+		docs: {
+			sidebar: {
+				hideable: true,
+			},
+		},
 		announcementBar: {
 			id: 'support_us',
 			content: 'Xplorer is still under heavy development, any features might change anytime.',
